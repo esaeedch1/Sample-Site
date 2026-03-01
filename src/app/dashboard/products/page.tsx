@@ -109,15 +109,26 @@ export default function ProductManagement() {
     setProducts(products.filter(p => p.id !== id));
   };
 
+  const handleSaveAllInventory = () => {
+    localStorage.setItem('cutixa_inventory', JSON.stringify(products));
+    alert("Full inventory saved! Any changes to 'Live/Published' status are now active.");
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('cutixa_inventory');
+    if (saved) setProducts(JSON.parse(saved));
+  }, []);
+
   return (
     <div className="product-management-page glass-panel">
       <div className="page-header">
         <div>
-          <h1>Inventory Management</h1>
-          <p className="text-muted">{products.length} Products | {selectedIds.length} Selected</p>
+          <h1>Inventory & Stock Authority</h1>
+          <p className="text-muted">{products.length} Products | {selectedIds.length} Selected | Role: Manager/Owner</p>
         </div>
         <div className="header-actions">
-          <button onClick={() => setShowAddModal(true)} className="btn-primary">Manual Entry</button>
+          <button onClick={handleSaveAllInventory} className="btn-primary save-btn">Save All Changes</button>
+          <button onClick={() => setShowAddModal(true)} className="btn-secondary">Manual Entry</button>
           <button onClick={() => setShowSettingsModal(true)} className="btn-secondary">Columns</button>
         </div>
       </div>

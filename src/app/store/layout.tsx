@@ -88,23 +88,23 @@ function StoreLayoutContent({ children }: { children: ReactNode }) {
       </main>
 
       <div className="floating-actions">
-        <button className="fab-main">
+        <div className="fab-main">
           <span>+</span>
           <div className="fab-options">
-            <button className="fab-option" onClick={() => alert('Opening Chat...')}>
+            <div className="fab-option" onClick={() => alert('Opening Chat...')}>
               <span className="fab-label">Chat</span>
               <span className="fab-icon">💬</span>
-            </button>
-            <button className="fab-option" onClick={() => alert('Opening Preferences...')}>
+            </div>
+            <div className="fab-option" onClick={() => alert('Opening Preferences...')}>
               <span className="fab-label">Preferences</span>
               <span className="fab-icon">⚙️</span>
-            </button>
-            <button className="fab-option" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            </div>
+            <div className="fab-option" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <span className="fab-label">Move to top</span>
               <span className="fab-icon">↑</span>
-            </button>
+            </div>
           </div>
-        </button>
+        </div>
       </div>
 
       <footer className="store-footer">

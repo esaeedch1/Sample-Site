@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const ROLES = [
     "Admin",
@@ -20,16 +20,18 @@ export default function RolesManagement() {
     const [currentUserRole, setCurrentUserRole] = useState("Owner");
     const [users, setUsers] = useState(USERS_MOCK);
 
-    // Requirement Logic:
-    // Owner: Assign Admin
-    // Owner and Admin: Assign Admin, Manage, Data Entry Operator, Sales man
-    // Manager: Assign Supervisor, Data Entry Operator, Sales man
+    useEffect(() => {
+        const saved = localStorage.getItem('cutixa_staff');
+        if (saved) setUsers(JSON.parse(saved));
+    }, []);
+
+    const handleSaveRoles = () => {
+        localStorage.setItem('cutixa_staff', JSON.stringify(users));
+        alert("Role assignments saved! These permissions are now active across the dashboard.");
+    };
 
     const getAvailableRolesForCurrentRole = (role: string) => {
-        if (role === "Owner") {
-            return ["Admin", "Manage", "Data Entry Operator", "Sales man"];
-        }
-        if (role === "Admin") {
+        if (role === "Owner" || role === "Admin") {
             return ["Admin", "Manage", "Data Entry Operator", "Sales man"];
         }
         if (role === "Manager") {
@@ -40,14 +42,18 @@ export default function RolesManagement() {
 
     const handleRoleChange = (userId: number, newRole: string) => {
         setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-        alert(`Role updated for user ${userId} to ${newRole}`);
     };
 
     return (
         <div className="roles-page glass-panel">
             <div className="page-header">
-                <h1>Role Management</h1>
-                <p className="text-muted">Manage your team's access levels.</p>
+                <div className="flex-between">
+                    <div>
+                        <h1>Role Management & Hierarchy</h1>
+                        <p className="text-muted">Manage your team's access levels based on your authority.</p>
+                    </div>
+                    <button onClick={handleSaveRoles} className="btn-primary">Save Role Assignments</button>
+                </div>
             </div>
 
             <div className="role-debug">
@@ -100,6 +106,7 @@ export default function RolesManagement() {
           border-radius: var(--radius-lg);
         }
         .page-header { margin-bottom: var(--spacing-lg); }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
         .role-debug {
           margin-bottom: var(--spacing-md);
           padding: var(--spacing-sm);

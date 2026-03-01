@@ -12,7 +12,8 @@ export default function ContentManagement() {
         heroTitle: "Skin Care",
         heroSubtitle: "Discover the new arrivals in unstitched and ready-to-wear.",
         showComingSoon: true,
-        comingSoonMessage: "Coming Soon...."
+        comingSoonMessage: "Coming Soon....",
+        liveEditMode: false
     });
 
     useEffect(() => {
@@ -22,18 +23,32 @@ export default function ContentManagement() {
 
     const handleSave = () => {
         localStorage.setItem('homepage_settings', JSON.stringify(settings));
-        alert("Homepage settings updated successfully!");
+        localStorage.setItem('cutixa_live_edit', settings.liveEditMode ? 'true' : 'false');
+        alert("Settings updated successfully! Live Edit Mode is now " + (settings.liveEditMode ? "ENABLED" : "DISABLED"));
     };
 
     return (
         <div className="content-mgmt-page glass-panel animate-fade-in">
             <div className="page-header">
-                <h1>Homepage Content Management</h1>
-                <p className="text-muted">Owner and Admin only: Toggle sections and edit text on the storefront.</p>
+                <h1>Store Management & Content</h1>
+                <p className="text-muted">Owner and Admin only: Toggle sections, edit text, and enable Live Edit Mode.</p>
                 <button className="btn-primary" onClick={handleSave}>Save Changes</button>
             </div>
 
             <div className="settings-grid">
+                <section className="settings-card glass-panel">
+                    <h2>Live Editor & Global</h2>
+                    <p className="text-secondary mb-4">Enable "Live Edit" to see edit icons directly on the storefront.</p>
+                    <div className="toggle-item">
+                        <label>Live Edit Mode</label>
+                        <input
+                            type="checkbox"
+                            checked={settings.liveEditMode}
+                            onChange={(e) => setSettings({ ...settings, liveEditMode: e.target.checked })}
+                        />
+                    </div>
+                </section>
+
                 <section className="settings-card glass-panel">
                     <h2>Visibility Control</h2>
                     <div className="toggle-list">

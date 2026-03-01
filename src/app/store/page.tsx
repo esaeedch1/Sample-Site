@@ -15,18 +15,33 @@ export default function StoreHomepage() {
     showNewArrivals: true,
     promoText: "Ramadan Sale",
     heroTitle: "Skin Care",
-    heroSubtitle: "Discover the new arrivals in unstitched and ready-to-wear."
+    heroSubtitle: "Discover the new arrivals in unstitched and ready-to-wear.",
+    liveEditMode: false
   });
 
   useEffect(() => {
     const saved = localStorage.getItem('homepage_settings');
-    if (saved) setSettings(JSON.parse(saved));
+    const liveEdit = localStorage.getItem('cutixa_live_edit') === 'true';
+    if (saved) {
+      setSettings({ ...JSON.parse(saved), liveEditMode: liveEdit });
+    } else {
+      setSettings(prev => ({ ...prev, liveEditMode: liveEdit }));
+    }
   }, []);
+
+  const EditBadge = ({ target = "content" }) => (
+    settings.liveEditMode ? (
+      <Link href={`/dashboard/${target}`} className="edit-badge">
+        <span className="edit-icon">✎</span> Edit Section
+      </Link>
+    ) : null
+  );
 
   return (
     <div className="homepage animate-fade-in">
       {settings.showHero && (
         <section className="hero">
+          <EditBadge />
           <div className="hero-content">
             <h1>{settings.heroTitle}</h1>
             <p>{settings.heroSubtitle}</p>
@@ -41,6 +56,7 @@ export default function StoreHomepage() {
 
       {settings.showCategories && (
         <section className="categories-section container">
+          <EditBadge />
           <h2 className="section-title">Skin Care Categories</h2>
           <div className="category-grid">
             <Link href="/store/category/extracts" className="category-card">
@@ -77,6 +93,7 @@ export default function StoreHomepage() {
 
       {settings.showPromo && (
         <section className="promo-section">
+          <EditBadge />
           <div className="container promo-content">
             <h2>{settings.promoText}</h2>
             <p>Up to 50% off on selected items.</p>
@@ -87,6 +104,7 @@ export default function StoreHomepage() {
 
       {settings.showNewArrivals && (
         <section className="new-arrivals container">
+          <EditBadge target="products" />
           <h2 className="section-title">New Arrivals</h2>
           <div className="products-grid">
             {PRODUCTS.map(product => (
@@ -109,6 +127,31 @@ export default function StoreHomepage() {
           display: flex;
           flex-direction: column;
           gap: var(--spacing-xl);
+          position: relative;
+        }
+        .edit-badge {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          background: var(--accent-color);
+          color: black;
+          padding: 0.5rem 1rem;
+          border-radius: var(--radius-sm);
+          font-size: 0.75rem;
+          font-weight: 700;
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+          transition: all 0.2s;
+        }
+        .edit-badge:hover {
+          transform: scale(1.05);
+          filter: brightness(1.1);
+        }
+        .hero, .categories-section, .promo-section, .new-arrivals {
+          position: relative;
         }
         .hero {
           position: relative;

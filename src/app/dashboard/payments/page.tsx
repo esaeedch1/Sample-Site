@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const PAYMENT_METHODS = [
     { id: "jazzcash", name: "JazzCash", active: true },
@@ -8,16 +8,24 @@ const PAYMENT_METHODS = [
     { id: "easypaisa", name: "EasyPaisa", active: true },
     { id: "debitcard", name: "Debit Card", active: true },
     { id: "online-banking", name: "Online Banking App", active: true },
+    { id: "crypto", name: "Cryptocurrency (USDT/BTC)", active: false },
 ];
 
 export default function PaymentSettings() {
     const [paymentMethods, setPaymentMethods] = useState(PAYMENT_METHODS);
-    const [bankAccount, setBankAccount] = useState({
-        bankName: "",
-        accountTitle: "",
-        iban: ""
-    });
-    const [isSaved, setIsSaved] = useState(false);
+    const [bankAccount, setBankAccount] = useState({ bankName: "", accountTitle: "", iban: "" });
+    const [cryptoWallet, setCryptoWallet] = useState({ walletAddress: "", network: "TRC20" });
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        const savedMethods = localStorage.getItem('active_payment_methods');
+        const savedBank = localStorage.getItem('receiver_bank_details');
+        const savedCrypto = localStorage.getItem('receiver_crypto_details');
+
+        if (savedMethods) setPaymentMethods(JSON.parse(savedMethods));
+        if (savedBank) setBankAccount(JSON.parse(savedBank));
+        if (savedCrypto) setCryptoWallet(JSON.parse(savedCrypto));
+    }, []);
 
     const toggleMethod = (id: string) => {
         setPaymentMethods(paymentMethods.map(m =>
@@ -25,24 +33,38 @@ export default function PaymentSettings() {
         ));
     };
 
-    const handleSaveAccount = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSaved(true);
-        setTimeout(() => setIsSaved(false), 3000);
-        alert("Bank account details saved successfully!");
+    const handleSaveAll = () => {
+        setIsSaving(true);
+        localStorage.setItem('active_payment_methods', JSON.stringify(paymentMethods));
+        localStorage.setItem('receiver_bank_details', JSON.stringify(bankAccount));
+        localStorage.setItem('receiver_crypto_details', JSON.stringify(cryptoWallet));
+
+        setTimeout(() => {
+            setIsSaving(false);
+            alert("All payment settings saved successfully! These changes are now live for buyers.");
+        }, 800);
     };
 
     return (
         <div className="payment-settings-page glass-panel">
             <div className="page-header">
-                <h1>Payment Settings</h1>
-                <p className="text-muted">Configure how you receive payments and what methods are available to customers.</p>
+                <div className="header-info">
+                    <h1>Payment Settings & Gateways</h1>
+                    <p className="text-muted">Manage active methods and receiver accounts. Changes must be saved to go live.</p>
+                </div>
+                <button
+                    className={`btn-primary save-all-btn ${isSaving ? 'loading' : ''}`}
+                    onClick={handleSaveAll}
+                    disabled={isSaving}
+                >
+                    {isSaving ? "Saving..." : "Save All Settings"}
+                </button>
             </div>
 
             <div className="settings-grid">
                 <section className="settings-card glass-panel">
-                    <h2>Active Payment Methods</h2>
-                    <p className="text-secondary mb-4">Select which payment options to show at checkout.</p>
+                    <h2>Available Methods</h2>
+                    <p className="text-secondary mb-4">Toggle visibility for customers at checkout.</p>
                     <div className="methods-list">
                         {paymentMethods.map(method => (
                             <div key={method.id} className="method-item">
@@ -60,45 +82,68 @@ export default function PaymentSettings() {
                     </div>
                 </section>
 
-                <section className="settings-card glass-panel">
-                    <h2>Receiver Account Details</h2>
-                    <p className="text-secondary mb-4">Enter your bank details to receive order amounts directly.</p>
-                    <form className="account-form" onSubmit={handleSaveAccount}>
-                        <div className="form-group">
-                            <label>Bank Name:</label>
-                            <input
-                                type="text"
-                                value={bankAccount.bankName}
-                                onChange={(e) => setBankAccount({ ...bankAccount, bankName: e.target.value })}
-                                placeholder="e.g. HBL, Alfalah, Meezan"
-                                required
-                            />
+                <div className="receiver-configs">
+                    <section className="settings-card glass-panel mb-4">
+                        <h2>Bank Receiver Account</h2>
+                        <div className="account-form">
+                            <div className="form-group">
+                                <label>Bank Name:</label>
+                                <input
+                                    type="text"
+                                    value={bankAccount.bankName}
+                                    onChange={(e) => setBankAccount({ ...bankAccount, bankName: e.target.value })}
+                                    placeholder="e.g. HBL"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Account Title:</label>
+                                <input
+                                    type="text"
+                                    value={bankAccount.accountTitle}
+                                    onChange={(e) => setBankAccount({ ...bankAccount, accountTitle: e.target.value })}
+                                    placeholder="Title"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>IBAN:</label>
+                                <input
+                                    type="text"
+                                    value={bankAccount.iban}
+                                    onChange={(e) => setBankAccount({ ...bankAccount, iban: e.target.value })}
+                                    placeholder="PK..."
+                                />
+                            </div>
                         </div>
-                        <div className="form-group">
-                            <label>Account Title:</label>
-                            <input
-                                type="text"
-                                value={bankAccount.accountTitle}
-                                onChange={(e) => setBankAccount({ ...bankAccount, accountTitle: e.target.value })}
-                                placeholder="Name on account"
-                                required
-                            />
+                    </section>
+
+                    <section className="settings-card glass-panel">
+                        <h2>Crypto Wallet Receiver</h2>
+                        <div className="account-form">
+                            <div className="form-group">
+                                <label>Wallet Address:</label>
+                                <input
+                                    type="text"
+                                    value={cryptoWallet.walletAddress}
+                                    onChange={(e) => setCryptoWallet({ ...cryptoWallet, walletAddress: e.target.value })}
+                                    placeholder="0x..."
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Network:</label>
+                                <select
+                                    value={cryptoWallet.network}
+                                    onChange={(e) => setCryptoWallet({ ...cryptoWallet, network: e.target.value })}
+                                    className="custom-select"
+                                >
+                                    <option value="TRC20">TRC20</option>
+                                    <option value="ERC20">ERC20</option>
+                                    <option value="BEP20">BEP20</option>
+                                    <option value="BTC">Bitcoin</option>
+                                </select>
+                            </div>
                         </div>
-                        <div className="form-group">
-                            <label>IBAN:</label>
-                            <input
-                                type="text"
-                                value={bankAccount.iban}
-                                onChange={(e) => setBankAccount({ ...bankAccount, iban: e.target.value })}
-                                placeholder="PK00 XXXX XXXX XXXX XXXX"
-                                required
-                            />
-                        </div>
-                        <button type="submit" className={`btn-primary ${isSaved ? "saved" : ""}`}>
-                            {isSaved ? "Account Saved ✓" : "Save Account Details"}
-                        </button>
-                    </form>
-                </section>
+                    </section>
+                </div>
             </div>
 
             <style jsx>{`
@@ -106,7 +151,24 @@ export default function PaymentSettings() {
           padding: var(--spacing-lg);
           border-radius: var(--radius-lg);
         }
-        .page-header { margin-bottom: var(--spacing-xl); }
+        .page-header { 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: center; 
+          margin-bottom: var(--spacing-xl); 
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+        .header-info { flex: 1; min-width: 280px; }
+        .save-all-btn {
+          padding: 1rem 2rem;
+          font-size: 1rem;
+          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .save-all-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
         .settings-grid {
           display: grid;
           grid-template-columns: 1fr;
@@ -124,6 +186,20 @@ export default function PaymentSettings() {
         .settings-card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
         .text-secondary { font-size: 0.875rem; color: var(--text-secondary); }
         .mb-4 { margin-bottom: 1.5rem; }
+
+        .receiver-configs {
+          display: flex;
+          flex-direction: column;
+          gap: var(--spacing-lg);
+        }
+        .custom-select {
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 0.75rem;
+          border-radius: var(--radius-md);
+          cursor: pointer;
+        }
 
         .methods-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
         .method-item {

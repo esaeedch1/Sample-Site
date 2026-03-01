@@ -1,31 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { PRODUCTS } from "@/lib/data";
 import { useCurrency } from "@/lib/CurrencyContext";
+import { useCart } from "@/lib/CartContext";
 
 export default function CartPage() {
   const { formatPrice } = useCurrency();
-  // Mock cart data
-  const [cartItems, setCartItems] = useState([
-    { ...PRODUCTS[0], quantity: 1 },
-    { ...PRODUCTS[1], quantity: 2 },
-  ]);
+  const { cart, removeFromCart } = useCart();
 
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.regularPrice * item.quantity), 0);
-  const standardShipping = 15;
+  const subtotal = cart.reduce((acc, item) => acc + (item.regularPrice * item.quantity), 0);
+  const standardShipping = cart.length > 0 ? 15 : 0;
   const total = subtotal + standardShipping;
 
   const removeItem = (id: string) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+    removeFromCart(id);
   };
 
   return (
     <div className="cart-page container animate-fade-in">
       <h1 className="page-title">Shopping Cart</h1>
 
-      {cartItems.length === 0 ? (
+      {cart.length === 0 ? (
         <div className="empty-state">
           <h2>Your cart is empty.</h2>
           <p>Explore our collections to find something you'll love.</p>
@@ -36,7 +31,7 @@ export default function CartPage() {
       ) : (
         <div className="cart-layout">
           <div className="cart-items">
-            {cartItems.map((item) => (
+            {cart.map((item) => (
               <div key={item.id} className="cart-item glass-panel">
                 <img src={item.images[0]} alt={item.name} className="item-image" />
                 <div className="item-details">
@@ -69,11 +64,22 @@ export default function CartPage() {
             <Link href="/store/checkout" className="btn-primary checkout-btn">
               Proceed to Checkout
             </Link>
+            <Link href="/store" className="continue-link">
+              ← Continue Shopping
+            </Link>
           </div>
         </div>
       )}
 
       <style jsx>{`
+        .continue-link {
+          display: block;
+          text-align: center;
+          margin-top: 1rem;
+          font-size: 0.875rem;
+          color: var(--text-secondary);
+        }
+        .continue-link:hover { color: var(--accent-color); }
         .cart-page {
           padding-top: var(--spacing-xl);
           padding-bottom: var(--spacing-xl);

@@ -5,9 +5,10 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface CartItem {
     id: string;
     name: string;
-    price: number;
+    regularPrice: number;
     quantity: number;
-    image: string;
+    images: string[];
+    brand: string;
 }
 
 interface CartContextType {
@@ -37,7 +38,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     // Save cart to localStorage on change
     useEffect(() => {
-        localStorage.setItem('cutixa-cart', JSON.stringify(cart));
+        if (cart.length > 0) {
+            localStorage.setItem('cutixa-cart', JSON.stringify(cart));
+        }
     }, [cart]);
 
     const addToCart = (product: any, quantity: number) => {
@@ -50,7 +53,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                         : item
                 );
             }
-            return [...prevCart, { ...product, quantity }];
+            return [...prevCart, {
+                id: product.id,
+                name: product.name,
+                regularPrice: product.regularPrice,
+                quantity: quantity,
+                images: product.images,
+                brand: product.brand
+            }];
         });
     };
 
