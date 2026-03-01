@@ -8,8 +8,8 @@ const outfitFont = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Sample Brand - Premium Fashion",
-  description: "Shop women, men, fragrances, and more from Sample Brand Online Store.",
+  title: "CutiXa Adore - Love Your Skin",
+  description: "Experience premium skincare with CutiXa Adore. Love Your Skin.",
 };
 
 export default function RootLayout({

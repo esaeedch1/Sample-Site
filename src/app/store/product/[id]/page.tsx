@@ -1,82 +1,86 @@
 "use client";
 
 import { use } from "react";
-import { PRODUCTS, PRICING_MULTIPLIER } from "@/lib/data";
+import { PRODUCTS } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
+import { useCart } from "@/lib/CartContext";
+import { useCurrency } from "@/lib/CurrencyContext";
 
 export default function ProductPage({
-    params,
+  params,
 }: {
-    params: Promise<{ id: string }>
+  params: Promise<{ id: string }>
 }) {
-    const { id } = use(params);
-    const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
+  const { id } = use(params);
+  const [quantity, setQuantity] = useState(1);
 
-    const product = PRODUCTS.find(p => p.id === id);
-    if (!product) {
-        notFound();
-    }
+  const product = PRODUCTS.find(p => p.id === id);
+  if (!product) {
+    notFound();
+  }
 
-    const handleAddToCart = () => {
-        // Basic mock interaction
-        alert(`Added ${quantity} of ${product.name} to cart.`);
-    };
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+  };
 
-    return (
-        <div className="product-page container animate-fade-in">
-            <Link href={`/store/category/${product.category}`} className="back-link">
-                ← Back to {product.category}
-            </Link>
+  const primaryCategory = product.categories[0] || 'skin-care';
 
-            <div className="product-layout">
-                <div className="product-image-section">
-                    <img
-                        src={product.image}
-                        alt={product.name}
-                        className="main-image"
-                    />
-                </div>
+  return (
+    <div className="product-page container animate-fade-in">
+      <Link href={`/store/category/${primaryCategory.toLowerCase()}`} className="back-link">
+        ← Back to {primaryCategory}
+      </Link>
 
-                <div className="product-details-section">
-                    <h1 className="product-title">{product.name}</h1>
-                    <p className="product-price">${(product.price * PRICING_MULTIPLIER).toFixed(2)}</p>
+      <div className="product-layout">
+        <div className="product-image-section">
+          <img
+            src={product.images[0] || 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&q=80&w=600'}
+            alt={product.name}
+            className="main-image"
+          />
+        </div>
 
-                    <div className="product-description text-muted">
-                        <p>
-                            Experience unparalleled elegance with our {product.name}.
-                            Crafted from the finest materials to ensure premium quality and enduring style.
-                            Perfect for making a statement at any occasion.
-                        </p>
-                    </div>
+        <div className="product-details-section">
+          <h1 className="product-title">{product.name}</h1>
+          <p className="product-price">{formatPrice(product.regularPrice)}</p>
 
-                    <div className="add-to-cart-section">
-                        <div className="quantity-selector">
-                            <button
-                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                className="qty-btn"
-                            >-</button>
-                            <span className="qty-value">{quantity}</span>
-                            <button
-                                onClick={() => setQuantity(quantity + 1)}
-                                className="qty-btn"
-                            >+</button>
-                        </div>
+          <div className="product-description text-muted">
+            <p>
+              {product.description || `Experience unparalleled elegance with our ${product.name}. Crafted from the finest materials to ensure premium quality and enduring style.`}
+            </p>
+          </div>
 
-                        <button className="btn-primary add-btn" onClick={handleAddToCart}>
-                            Add to Cart
-                        </button>
-                    </div>
-
-                    <div className="product-meta">
-                        <p><strong>Category:</strong> <span className="capitalize">{product.category}</span></p>
-                        <p><strong>SKU:</strong> SB-{product.id.toUpperCase()}</p>
-                    </div>
-                </div>
+          <div className="add-to-cart-section">
+            <div className="quantity-selector">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="qty-btn"
+              >-</button>
+              <span className="qty-value">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="qty-btn"
+              >+</button>
             </div>
 
-            <style jsx>{`
+            <button className="btn-primary add-btn" onClick={handleAddToCart}>
+              Add to Cart
+            </button>
+          </div>
+
+          <div className="product-meta">
+            <p><strong>Brand:</strong> {product.brand}</p>
+            <p><strong>SKU:</strong> {product.sku}</p>
+            <p><strong>Stock Status:</strong> {product.inStock ? `${product.stock} units available` : 'Out of Stock'}</p>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
         .product-page {
           padding-top: var(--spacing-lg);
           padding-bottom: var(--spacing-xl);
@@ -181,6 +185,6 @@ export default function ProductPage({
           text-transform: capitalize;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

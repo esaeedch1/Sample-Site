@@ -1,64 +1,108 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { PRODUCTS } from "@/lib/data";
+import { useCurrency } from "@/lib/CurrencyContext";
 
 export default function StoreHomepage() {
+  const { formatPrice } = useCurrency();
+  const [settings, setSettings] = useState({
+    showHero: true,
+    showCategories: true,
+    showPromo: true,
+    showNewArrivals: true,
+    promoText: "Ramadan Sale",
+    heroTitle: "Skin Care",
+    heroSubtitle: "Discover the new arrivals in unstitched and ready-to-wear."
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('homepage_settings');
+    if (saved) setSettings(JSON.parse(saved));
+  }, []);
+
   return (
     <div className="homepage animate-fade-in">
-      <section className="hero">
-        <div className="hero-content">
-          <h1>Elegance Defined.</h1>
-          <p>Discover the new arrivals in unstitched and ready-to-wear.</p>
-          <div className="hero-actions">
-            <Link href="/store/category/women" className="btn-primary">Shop Women</Link>
-            <Link href="/store/category/men" className="btn-secondary">Shop Men</Link>
+      {settings.showHero && (
+        <section className="hero">
+          <div className="hero-content">
+            <h1>{settings.heroTitle}</h1>
+            <p>{settings.heroSubtitle}</p>
+            <div className="hero-actions">
+              <Link href="/store/category/serums" className="btn-primary">Shop Serums</Link>
+              <Link href="/store/category/beauty-kits" className="btn-secondary">Beauty Kits</Link>
+            </div>
           </div>
-        </div>
-        <div className="hero-overlay"></div>
-      </section>
+          <div className="hero-overlay"></div>
+        </section>
+      )}
 
-      <section className="categories-section container">
-        <h2 className="section-title">Shop by Category</h2>
-        <div className="category-grid">
-          <Link href="/store/category/women" className="category-card">
-            <div className="card-bg women-bg"></div>
-            <div className="card-content glass-panel">
-              <h3>Women's Collection</h3>
-              <span>Explore →</span>
-            </div>
-          </Link>
-          <Link href="/store/category/men" className="category-card">
-            <div className="card-bg men-bg"></div>
-            <div className="card-content glass-panel">
-              <h3>Men's Collection</h3>
-              <span>Explore →</span>
-            </div>
-          </Link>
-          <Link href="/store/category/fragrances" className="category-card">
-            <div className="card-bg fragrances-bg"></div>
-            <div className="card-content glass-panel">
-              <h3>Signature Fragrances</h3>
-              <span>Explore →</span>
-            </div>
-          </Link>
-          <Link href="/store/category/beauty" className="category-card">
-            <div className="card-bg beauty-bg"></div>
-            <div className="card-content glass-panel">
-              <h3>Beauty & Skincare</h3>
-              <span>Explore →</span>
-            </div>
-          </Link>
-        </div>
-      </section>
+      {settings.showCategories && (
+        <section className="categories-section container">
+          <h2 className="section-title">Skin Care Categories</h2>
+          <div className="category-grid">
+            <Link href="/store/category/extracts" className="category-card">
+              <div className="card-bg extracts-bg"></div>
+              <div className="card-content glass-panel">
+                <h3>Extracts</h3>
+                <span>Explore →</span>
+              </div>
+            </Link>
+            <Link href="/store/category/tonner" className="category-card">
+              <div className="card-bg tonner-bg"></div>
+              <div className="card-content glass-panel">
+                <h3>Tonners</h3>
+                <span>Explore →</span>
+              </div>
+            </Link>
+            <Link href="/store/category/creams" className="category-card">
+              <div className="card-bg creams-bg"></div>
+              <div className="card-content glass-panel">
+                <h3>Creams</h3>
+                <span>Explore →</span>
+              </div>
+            </Link>
+            <Link href="/store/category/beauty-kits" className="category-card">
+              <div className="card-bg kits-bg"></div>
+              <div className="card-content glass-panel">
+                <h3>Beauty Kits</h3>
+                <span>Explore →</span>
+              </div>
+            </Link>
+          </div>
+        </section>
+      )}
 
-      <section className="promo-section">
-        <div className="container promo-content">
-          <h2>Ramadan Sale</h2>
-          <p>Up to 50% off on selected items.</p>
-          <Link href="/store/sales" className="btn-primary">View Sale</Link>
-        </div>
-      </section>
+      {settings.showPromo && (
+        <section className="promo-section">
+          <div className="container promo-content">
+            <h2>{settings.promoText}</h2>
+            <p>Up to 50% off on selected items.</p>
+            <Link href="/store/sales" className="btn-primary">View Sale</Link>
+          </div>
+        </section>
+      )}
+
+      {settings.showNewArrivals && (
+        <section className="new-arrivals container">
+          <h2 className="section-title">New Arrivals</h2>
+          <div className="products-grid">
+            {PRODUCTS.map(product => (
+              <Link href={`/store/product/${product.id}`} key={product.id} className="product-card glass-panel">
+                <div className="product-image">
+                  <img src={product.images[0]} alt={product.name} />
+                </div>
+                <div className="product-info">
+                  <h3>{product.name}</h3>
+                  <p className="price">{formatPrice(product.regularPrice)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <style jsx>{`
         .homepage {
@@ -161,10 +205,10 @@ export default function StoreHomepage() {
           transition: transform 0.5s ease;
           z-index: 1;
         }
-        .women-bg { background-image: url('/women_category.png'); }
-        .men-bg { background-image: url('/men_category.png'); }
-        .fragrances-bg { background-image: url('/fragrances_category.png'); }
-        .beauty-bg { background-image: url('/beauty_category.png'); }
+        .extracts-bg { background-image: url('https://images.unsplash.com/photo-1601055283431-7137f4f8d7f3?auto=format&fit=crop&q=80&w=600'); }
+        .tonner-bg { background-image: url('https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&q=80&w=600'); }
+        .creams-bg { background-image: url('https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80&w=600'); }
+        .kits-bg { background-image: url('https://images.unsplash.com/photo-1512496011931-d21d8fa92196?auto=format&fit=crop&q=80&w=600'); }
         
         .category-card:hover .card-bg {
           transform: scale(1.05);
@@ -220,6 +264,48 @@ export default function StoreHomepage() {
         .promo-content p {
           font-size: 1.25rem;
           margin-bottom: var(--spacing-lg);
+        }
+        .products-grid {
+          display: grid;
+          grid-template-columns: repeat(1, 1fr);
+          gap: var(--spacing-lg);
+          margin-top: 1rem;
+        }
+        @media (min-width: 640px) {
+          .products-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 1024px) {
+          .products-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .product-card {
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-lg);
+          transition: all 0.3s ease;
+          display: block;
+        }
+        .product-card:hover {
+          transform: translateY(-8px);
+          background: rgba(255, 255, 255, 0.05);
+          border-color: var(--accent-color);
+        }
+        .product-image img {
+          width: 100%;
+          aspect-ratio: 1;
+          object-fit: cover;
+          border-radius: var(--radius-md);
+          margin-bottom: 1rem;
+        }
+        .product-info h3 {
+          font-size: 1rem;
+          margin: 0 0 0.5rem 0;
+          color: var(--text-primary);
+        }
+        .product-info .price {
+          color: var(--accent-color);
+          font-weight: 600;
+          margin: 0;
         }
       `}</style>
     </div>

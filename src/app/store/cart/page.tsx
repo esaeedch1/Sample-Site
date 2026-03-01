@@ -2,76 +2,78 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { PRODUCTS, PRICING_MULTIPLIER } from "@/lib/data";
+import { PRODUCTS } from "@/lib/data";
+import { useCurrency } from "@/lib/CurrencyContext";
 
 export default function CartPage() {
-    // Mock cart data
-    const [cartItems, setCartItems] = useState([
-        { ...PRODUCTS[0], quantity: 1 },
-        { ...PRODUCTS[3], quantity: 2 },
-    ]);
+  const { formatPrice } = useCurrency();
+  // Mock cart data
+  const [cartItems, setCartItems] = useState([
+    { ...PRODUCTS[0], quantity: 1 },
+    { ...PRODUCTS[1], quantity: 2 },
+  ]);
 
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0) * PRICING_MULTIPLIER;
-    const standardShipping = 15;
-    const total = subtotal + standardShipping;
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.regularPrice * item.quantity), 0);
+  const standardShipping = 15;
+  const total = subtotal + standardShipping;
 
-    const removeItem = (id: string) => {
-        setCartItems(cartItems.filter(item => item.id !== id));
-    };
+  const removeItem = (id: string) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+  };
 
-    return (
-        <div className="cart-page container animate-fade-in">
-            <h1 className="page-title">Shopping Cart</h1>
+  return (
+    <div className="cart-page container animate-fade-in">
+      <h1 className="page-title">Shopping Cart</h1>
 
-            {cartItems.length === 0 ? (
-                <div className="empty-state">
-                    <h2>Your cart is empty.</h2>
-                    <p>Explore our collections to find something you'll love.</p>
-                    <Link href="/store" className="btn-primary mt-6 inline-block">
-                        Continue Shopping
-                    </Link>
+      {cartItems.length === 0 ? (
+        <div className="empty-state">
+          <h2>Your cart is empty.</h2>
+          <p>Explore our collections to find something you'll love.</p>
+          <Link href="/store" className="btn-primary mt-6 inline-block">
+            Continue Shopping
+          </Link>
+        </div>
+      ) : (
+        <div className="cart-layout">
+          <div className="cart-items">
+            {cartItems.map((item) => (
+              <div key={item.id} className="cart-item glass-panel">
+                <img src={item.images[0]} alt={item.name} className="item-image" />
+                <div className="item-details">
+                  <h3><Link href={`/store/product/${item.id}`}>{item.name}</Link></h3>
+                  <p className="text-muted capitalize">Brand: {item.brand}</p>
+                  <p className="item-price">{formatPrice(item.regularPrice)}</p>
                 </div>
-            ) : (
-                <div className="cart-layout">
-                    <div className="cart-items">
-                        {cartItems.map((item) => (
-                            <div key={item.id} className="cart-item glass-panel">
-                                <img src={item.image} alt={item.name} className="item-image" />
-                                <div className="item-details">
-                                    <h3><Link href={`/store/product/${item.id}`}>{item.name}</Link></h3>
-                                    <p className="text-muted capitalize">Category: {item.category}</p>
-                                    <p className="item-price">${(item.price * PRICING_MULTIPLIER).toFixed(2)}</p>
-                                </div>
-                                <div className="item-actions">
-                                    <div className="qty">Qty: {item.quantity}</div>
-                                    <button className="remove-btn" onClick={() => removeItem(item.id)}>Remove</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="cart-summary glass-panel">
-                        <h3>Order Summary</h3>
-                        <div className="summary-row">
-                            <span>Subtotal</span>
-                            <span>${subtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="summary-row">
-                            <span>Standard Shipping</span>
-                            <span>${standardShipping.toFixed(2)}</span>
-                        </div>
-                        <div className="summary-row total-row">
-                            <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
-                        </div>
-                        <Link href="/store/checkout" className="btn-primary checkout-btn">
-                            Proceed to Checkout
-                        </Link>
-                    </div>
+                <div className="item-actions">
+                  <div className="qty">Qty: {item.quantity}</div>
+                  <button className="remove-btn" onClick={() => removeItem(item.id)}>Remove</button>
                 </div>
-            )}
+              </div>
+            ))}
+          </div>
 
-            <style jsx>{`
+          <div className="cart-summary glass-panel">
+            <h3>Order Summary</h3>
+            <div className="summary-row">
+              <span>Subtotal</span>
+              <span>{formatPrice(subtotal)}</span>
+            </div>
+            <div className="summary-row">
+              <span>Standard Shipping</span>
+              <span>{formatPrice(standardShipping)}</span>
+            </div>
+            <div className="summary-row total-row">
+              <span>Total</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+            <Link href="/store/checkout" className="btn-primary checkout-btn">
+              Proceed to Checkout
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
         .cart-page {
           padding-top: var(--spacing-xl);
           padding-bottom: var(--spacing-xl);
@@ -179,6 +181,6 @@ export default function CartPage() {
           text-align: center;
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

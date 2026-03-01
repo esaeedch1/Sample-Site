@@ -1,18 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { PRODUCTS, PRICING_MULTIPLIER } from "@/lib/data";
+import { PRODUCTS } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { use } from "react";
+import { useCurrency } from "@/lib/CurrencyContext";
 
 // A small map for friendly category names
 const categoryNames: Record<string, string> = {
-  women: "Women's Collection",
-  men: "Men's Collection",
-  fragrances: "Signature Fragrances",
-  beauty: "Beauty & Skincare",
-  accessories: "Premium Accessories"
+  extracts: "Skin Extracts",
+  serums: "Concentrated Serums",
+  "beauty-kits": "Beauty Kits & Bundles",
+  "hair-care": "Hair Care Collection",
+  creams: "Premium Creams",
+  lotions: "Hydrating Lotions",
+  cleanser: "Facial Cleansers",
+  tonner: "Skin Toners",
+  lipsticks: "Luxury Lipsticks",
+  "facial-care": "Facial Skin Care",
+  "skin-care": "Total Skin Care"
 };
 
 export default function CategoryPage({
@@ -21,23 +28,29 @@ export default function CategoryPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = use(params);
+  const { formatPrice } = useCurrency();
 
-  if (!categoryNames[slug]) {
-    notFound();
-  }
+  // Normalize slug for matching (e.g., 'beauty-kits' -> 'Beauty Kits')
+  const displaySlug = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-  const categoryProducts = PRODUCTS.filter(p => p.category === slug);
+  const categoryProducts = PRODUCTS.filter(p =>
+    p.categories.some(c => c.toLowerCase() === displaySlug.toLowerCase()) ||
+    p.categories.some(c => c.toLowerCase() === slug.toLowerCase())
+  );
+
+  const pageTitle = categoryNames[slug] || `${displaySlug} Collection`;
 
   return (
     <div className="category-page container animate-fade-in">
       <div className="page-header">
-        <h1>{categoryNames[slug]}</h1>
-        <p className="subtitle">Explore our exclusive range of {slug}.</p>
+        <h1>{pageTitle}</h1>
+        <p className="subtitle">Explore our exclusive range of {displaySlug}.</p>
       </div>
 
       {categoryProducts.length === 0 ? (
         <div className="empty-state">
-          <p>No products found in this category.</p>
+          <p>No products found in "{displaySlug}" category.</p>
+          <Link href="/store" className="btn-primary mt-4 inline-block">Back to Shop</Link>
         </div>
       ) : (
         <div className="products-grid">
@@ -45,7 +58,7 @@ export default function CategoryPage({
             <Link href={`/store/product/${product.id}`} key={product.id} className="product-card">
               <div className="product-image-container">
                 <img
-                  src={product.image}
+                  src={product.images[0]}
                   alt={product.name}
                   className="product-image"
                 />
@@ -55,7 +68,7 @@ export default function CategoryPage({
               </div>
               <div className="product-info">
                 <h3>{product.name}</h3>
-                <p className="price">${(product.price * PRICING_MULTIPLIER).toFixed(2)}</p>
+                <p className="price">{formatPrice(product.regularPrice)}</p>
               </div>
             </Link>
           ))}

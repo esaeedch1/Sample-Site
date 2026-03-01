@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { PRODUCTS, PRICING_MULTIPLIER } from "@/lib/data";
+import { PRODUCTS } from "@/lib/data";
 import Image from "next/image";
+import { useCurrency } from "@/lib/CurrencyContext";
 
 export default function SalesPage() {
+    const { formatPrice } = useCurrency();
     // For the mock, just showing the first 4 products with a discount
     const saleProducts = PRODUCTS.slice(0, 4);
 
@@ -18,15 +20,15 @@ export default function SalesPage() {
 
             <div className="products-grid">
                 {saleProducts.map((product) => {
-                    const originalPrice = product.price * PRICING_MULTIPLIER;
-                    const salePrice = originalPrice * 0.7; // 30% off mock
+                    const originalPrice = product.regularPrice;
+                    const salePrice = product.salePrice || (originalPrice * 0.7); // Use salePrice if exists, else -30%
 
                     return (
                         <Link href={`/store/product/${product.id}`} key={product.id} className="product-card">
                             <div className="product-image-container">
-                                <div className="discount-tag">-30%</div>
+                                <div className="discount-tag">-{Math.round((1 - (salePrice / originalPrice)) * 100)}%</div>
                                 <img
-                                    src={product.image}
+                                    src={product.images[0]}
                                     alt={product.name}
                                     className="product-image"
                                 />
@@ -37,8 +39,8 @@ export default function SalesPage() {
                             <div className="product-info">
                                 <h3>{product.name}</h3>
                                 <div className="price-container">
-                                    <span className="original-price">${originalPrice.toFixed(2)}</span>
-                                    <span className="sale-price">${salePrice.toFixed(2)}</span>
+                                    <span className="original-price">{formatPrice(originalPrice)}</span>
+                                    <span className="sale-price">{formatPrice(salePrice)}</span>
                                 </div>
                             </div>
                         </Link>
